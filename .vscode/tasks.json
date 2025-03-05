@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "package: build and run tests",
+      "type": "shell",
+      "command": "swift test --skip-update --configuration debug --verbose --disable-xctest --enable-swift-testing --enable-code-coverage",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "package: clean",
+      "type": "shell",
+      "command": "swift package clean",
+      "group": "none",
+      "problemMatcher": []
+    },
+    {
+      "label": "package: lint",
+      "type": "shell",
+      "command": "swift-format lint --configuration swift-format-configuration.json --recursive --ignore-unparsable-files --strict Sources Tests",
+      "group": "none",
+      "problemMatcher": []
+    },
+    {
+      "label": "package: format",
+      "type": "shell",
+      "command": "swift-format format --configuration swift-format-configuration.json --recursive --ignore-unparsable-files --strict --in-place Sources Tests",
+      "group": "none",
+      "problemMatcher": []
+    }
+  ]
+}
