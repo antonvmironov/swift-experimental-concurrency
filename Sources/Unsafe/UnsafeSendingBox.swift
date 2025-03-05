@@ -1,4 +1,3 @@
-
 @frozen
 @usableFromInline
 package struct UnsafeSendingBox<Value: ~Copyable>: ~Copyable, Sendable {

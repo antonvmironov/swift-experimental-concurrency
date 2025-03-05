@@ -10,7 +10,8 @@ private let numberOfIterations = 1_000
   await withTaskGroup { group in
     for index in 0..<numberOfIterations {
       group.addTask {
-        let value: Int = await withSafeContinuation(fallback: -1) { continuation in
+        let value: Int = await withSafeContinuation(fallback: -1) {
+          continuation in
           for _ in 0..<10 {
             continuation.resume(returning: index)
           }

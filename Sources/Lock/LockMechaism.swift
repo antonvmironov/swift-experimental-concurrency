@@ -1,8 +1,8 @@
-import struct os.os_unfair_lock_t
 import struct os.os_unfair_lock
 import func os.os_unfair_lock_lock
-import func os.os_unfair_lock_unlock
+import struct os.os_unfair_lock_t
 import func os.os_unfair_lock_trylock
+import func os.os_unfair_lock_unlock
 
 @usableFromInline
 struct LockMechaism: Sendable, ~Copyable {

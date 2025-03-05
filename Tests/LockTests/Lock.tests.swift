@@ -8,15 +8,18 @@ private let numberOfIterations = 1_000_000
 
 @Test func testAtomics() {
   let lockedCounter = Atomic(0)
-  DispatchQueue.concurrentPerform(iterations: numberOfIterations) { iterationIndex in
+  DispatchQueue.concurrentPerform(iterations: numberOfIterations) {
+    iterationIndex in
     lockedCounter.add(1, ordering: .sequentiallyConsistent)
   }
-  #expect(numberOfIterations == lockedCounter.load(ordering: .sequentiallyConsistent))
+  #expect(
+    numberOfIterations == lockedCounter.load(ordering: .sequentiallyConsistent))
 }
 
 @Test func testLock() {
   let lockedCounter = Lock(0)
-  DispatchQueue.concurrentPerform(iterations: numberOfIterations) { iterationIndex in
+  DispatchQueue.concurrentPerform(iterations: numberOfIterations) {
+    iterationIndex in
     var unlockedCounter = unlock(lockedCounter)
     unlockedCounter.value += 1
   }

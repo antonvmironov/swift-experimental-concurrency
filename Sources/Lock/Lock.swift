@@ -64,7 +64,9 @@ final class LockHandle<Value: ~Copyable>: Sendable {
     }
 
     @inlinable
-    mutating func returnValueBox(_ boxedValue: consuming UnsafeSendingBox<Value>) {
+    mutating func returnValueBox(
+      _ boxedValue: consuming UnsafeSendingBox<Value>
+    ) {
       if case .locked = consume self {
         self = .unlocked(boxedValue.value)
       } else {

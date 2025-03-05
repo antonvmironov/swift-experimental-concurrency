@@ -25,7 +25,7 @@
     {
       "label": "package: format",
       "type": "shell",
-      "command": "swift-format format --configuration swift-format-configuration.json --recursive --ignore-unparsable-files --strict --in-place Sources Tests",
+      "command": "swift-format format --configuration swift-format-configuration.json --recursive --ignore-unparsable-files --in-place Sources Tests",
       "group": "none",
       "problemMatcher": []
     }

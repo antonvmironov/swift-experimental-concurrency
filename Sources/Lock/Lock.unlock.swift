@@ -1,5 +1,6 @@
 import struct Unsafe.UnsafeSendingBox
 
+// swift-format-ignore: TypeNamesShouldBeCapitalized
 public struct unlock<Value: ~Copyable>: ~Copyable, ~Escapable {
   @usableFromInline
   let _handle: LockHandle<Value>
