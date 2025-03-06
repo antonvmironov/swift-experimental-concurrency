@@ -25,19 +25,19 @@ import struct Unsafe.UnsafeSendingBox
 public typealias tryUnlock = NonescapingTryUnlock
 
 public struct NonescapingTryUnlock<
-  Value: ~Copyable
+  State: ~Copyable
 >: ~Copyable, ~Escapable {
   @usableFromInline
-  let _handle: LockHandle<Value>
-  public var value: Value
+  let _handle: LockHandle<State>
+  public var state: State
 
   @inlinable
-  public init(_ lock: borrowing Lock<Value>) throws(CancellationError) {
+  public init(_ lock: borrowing Lock<State>) throws(CancellationError) {
     _handle = lock._handle
-    value = try _handle.tryLockAndTakeValue()
+    state = try _handle.tryLockAndTakeState()
   }
 
   deinit {
-    _handle.returnValueAndUnlock(UnsafeSendingBox(value))
+    _handle.returnStateAndUnlock(UnsafeSendingBox(state))
   }
 }

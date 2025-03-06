@@ -21,61 +21,62 @@
 
 import struct Unsafe.UnsafeSendingBox
 
+///
 @usableFromInline
-final class LockHandle<Value: ~Copyable>: Sendable {
+final class LockHandle<State: ~Copyable>: Sendable {
   @usableFromInline
-  nonisolated(unsafe) var _state: State
+  nonisolated(unsafe) var _impl: _Impl
   @usableFromInline
   let _lockMechanism = LockMechaism()
 
   @inlinable
-  init(_ value: consuming sending Value) {
-    _state = .unlocked(value)
+  init(_ state: consuming sending State) {
+    _impl = .unlocked(state)
   }
 
   @inlinable
-  func lockAndTakeValue() -> sending Value {
+  func lockAndTakeState() -> sending State {
     _lockMechanism.lock()
-    return _state.takeValue()
+    return _impl.takeState()
   }
 
   @inlinable
-  func tryLockAndTakeValue() throws(CancellationError) -> sending Value {
+  func tryLockAndTakeState() throws(CancellationError) -> sending State {
     guard _lockMechanism.tryLock() else {
       throw CancellationError()
     }
-    return _state.takeValue()
+    return _impl.takeState()
   }
 
   @inlinable
-  func returnValueAndUnlock(_ boxedValue: consuming UnsafeSendingBox<Value>) {
-    _state.returnValueBox(boxedValue)
+  func returnStateAndUnlock(_ boxedState: consuming UnsafeSendingBox<State>) {
+    _impl.returnStateBox(boxedState)
     _lockMechanism.unlock()
   }
 
   @usableFromInline
-  enum State: ~Copyable {
+  enum _Impl: ~Copyable {
     case locked
-    case unlocked(Value)
+    case unlocked(State)
 
     @inlinable
-    mutating func takeValue() -> sending Value {
-      if case .unlocked(let unlockedValue) = consume self {
+    mutating func takeState() -> sending State {
+      if case .unlocked(let unlockeState) = consume self {
         self = .locked
-        return unlockedValue
+        return unlockeState
       } else {
-        fatalError()
+        fatalError("Recursive locking is not allowed")
       }
     }
 
     @inlinable
-    mutating func returnValueBox(
-      _ boxedValue: consuming UnsafeSendingBox<Value>
+    mutating func returnStateBox(
+      _ boxedState: consuming UnsafeSendingBox<State>
     ) {
       if case .locked = consume self {
-        self = .unlocked(boxedValue.value)
+        self = .unlocked(boxedState.value)
       } else {
-        fatalError()
+        fatalError("Recursive locking is not allowed")
       }
     }
   }

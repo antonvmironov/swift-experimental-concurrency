@@ -24,18 +24,18 @@ import struct Unsafe.UnsafeSendingBox
 // swift-format-ignore: TypeNamesShouldBeCapitalized
 public typealias unlock = NonescapingUnlock
 
-public struct NonescapingUnlock<Value: ~Copyable>: ~Copyable, ~Escapable {
+public struct NonescapingUnlock<State: ~Copyable>: ~Copyable, ~Escapable {
   @usableFromInline
-  let _handle: LockHandle<Value>
-  public var value: Value
+  let _handle: LockHandle<State>
+  public var state: State
 
   @inlinable
-  public init(_ lock: borrowing Lock<Value>) {
+  public init(_ lock: borrowing Lock<State>) {
     _handle = lock._handle
-    value = _handle.lockAndTakeValue()
+    state = _handle.lockAndTakeState()
   }
 
   deinit {
-    _handle.returnValueAndUnlock(UnsafeSendingBox(value))
+    _handle.returnStateAndUnlock(UnsafeSendingBox(state))
   }
 }

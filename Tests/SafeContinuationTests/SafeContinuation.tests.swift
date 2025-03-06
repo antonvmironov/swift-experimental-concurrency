@@ -20,7 +20,6 @@
 //===----------------------------------------------------------------------===//
 
 import Dispatch
-import Synchronization
 import Testing
 
 @testable import SafeContinuation

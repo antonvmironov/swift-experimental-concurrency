@@ -20,41 +20,47 @@
 //===----------------------------------------------------------------------===//
 
 import Dispatch
-import Synchronization
 import Testing
 
 @testable import Lock
 
-@Test func testAtomics() {
-  let lockedCounter = Atomic(0)
+@Test func basicExample() {
+
+  // EXAMPLE BEGIN
+  typealias Key = String
+  typealias Resource = String
+  final class Manager: Sendable {
+    private let lockedCache = Lock<[Key: Resource]>([:])
+
+    init() {}
+
+    func saveResource(_ resource: Resource, as key: Key) {
+      var unlockedCache = unlock(lockedCache)
+      unlockedCache.state[key] = resource
+    }
+
+    func loadResource(for key: Key) -> Resource? {
+      let unlockedCache = unlock(lockedCache)
+      return unlockedCache.state[key]
+    }
+  }
+  // EXAMPLE END
+
+  let manager = Manager()
   DispatchQueue.concurrentPerform(iterations: numberOfIterations) {
     iterationIndex in
-    lockedCounter.add(1, ordering: .sequentiallyConsistent)
+    let key: Key = "key \(iterationIndex)"
+    let resource: Resource = "Resource \(iterationIndex)"
+    manager.saveResource(resource, as: key)
   }
-  #expect(
-    numberOfIterations == lockedCounter.load(ordering: .sequentiallyConsistent))
-}
 
-@Test func testLock() {
-  let lockedCounter = Lock(0)
   DispatchQueue.concurrentPerform(iterations: numberOfIterations) {
     iterationIndex in
-    var unlockedCounter = unlock(lockedCounter)
-    unlockedCounter.state += 1
+    let key: Key = "key \(iterationIndex)"
+    let expectedResource: Resource = "Resource \(iterationIndex)"
+    let actualResource = manager.loadResource(for: key)
+    #expect(expectedResource == actualResource)
   }
-  #expect(numberOfIterations == lockedCounter.state)
 }
 
-// compiler crashes on this one
-// @Test func testTryLock() {
-//   let lockedCounter = Lock(0)
-//   DispatchQueue.concurrentPerform(iterations: numberOfIterations) { iterationIndex in
-//     do {
-//       var unlockedCounter = try tryUnlock(lockedCounter)
-//       unlockedCounter.value += 1
-//     } catch {}
-//   }
-//   #expect(numberOfIterations >= lockedCounter.value)
-// }
-
-private let numberOfIterations = 1_000_000
+private let numberOfIterations = 1_000

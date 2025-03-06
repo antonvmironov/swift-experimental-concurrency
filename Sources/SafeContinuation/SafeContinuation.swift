@@ -45,13 +45,13 @@ public struct SafeContinuation<T, E: Error>: Sendable {
   @inlinable
   public func resume(returning value: consuming sending T) {
     var impl = unlock(_impl)
-    impl.value.resume(returning: value)
+    impl.state.resume(returning: value)
   }
 
   @inlinable
   public func resume(throwing error: consuming E) {
     var impl = unlock(_impl)
-    impl.value.resume(throwing: error)
+    impl.state.resume(throwing: error)
   }
 
   @inlinable
