@@ -36,18 +36,18 @@ enum ImmediateCancellationState<Output>: ~Copyable {
   ) {
     let next: Self
     switch self {
-      case .initial:
-        next = .receivedContinuation(continuation)
-      case .receivedContinuation:
-        fatalError()
-      case .receivedOutput(let outputBox):
-        continuation.resume(with: outputBox.value)
-        next = .complete
-      case .receivedCancellation:
-        continuation.resume(throwing: CancellationError())
-        next = .complete
-      case .complete:
-        fatalError()
+    case .initial:
+      next = .receivedContinuation(continuation)
+    case .receivedContinuation:
+      fatalError()
+    case .receivedOutput(let outputBox):
+      continuation.resume(with: outputBox.value)
+      next = .complete
+    case .receivedCancellation:
+      continuation.resume(throwing: CancellationError())
+      next = .complete
+    case .complete:
+      fatalError()
     }
     self = next
   }
@@ -57,17 +57,17 @@ enum ImmediateCancellationState<Output>: ~Copyable {
   ) {
     let next: Self
     switch self {
-      case .initial:
-        next = .receivedOutput(outputResultBox)
-      case .receivedContinuation(let continuation):
-        continuation.resume(with: outputResultBox.value)
-        next = .complete
-      case .receivedOutput:
-        fatalError()
-      case .receivedCancellation:
-        return
-      case .complete:
-        fatalError()
+    case .initial:
+      next = .receivedOutput(outputResultBox)
+    case .receivedContinuation(let continuation):
+      continuation.resume(with: outputResultBox.value)
+      next = .complete
+    case .receivedOutput:
+      fatalError()
+    case .receivedCancellation:
+      return
+    case .complete:
+      fatalError()
     }
     self = next
   }
@@ -75,17 +75,17 @@ enum ImmediateCancellationState<Output>: ~Copyable {
   mutating func receivedCancellation() {
     let next: Self
     switch self {
-      case .initial:
-        next = .receivedCancellation
-      case .receivedContinuation(let continuation):
-        continuation.resume(throwing: CancellationError())
-        next = .complete
-      case .receivedOutput:
-        return
-      case .receivedCancellation:
-        fatalError()
-      case .complete:
-        fatalError()
+    case .initial:
+      next = .receivedCancellation
+    case .receivedContinuation(let continuation):
+      continuation.resume(throwing: CancellationError())
+      next = .complete
+    case .receivedOutput:
+      return
+    case .receivedCancellation:
+      fatalError()
+    case .complete:
+      fatalError()
     }
     self = next
   }

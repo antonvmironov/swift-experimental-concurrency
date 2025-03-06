@@ -48,11 +48,13 @@ extension Lock where State: ~Copyable {
     return try body(&unlocked.state)
   }
 
-// compiler is crashing on this one
-// public func withLockIfAvailable<Ouput: ~Copyable, Failure: Error>(
-//   _ body: (inout sending State) throws(Failure) -> sending Ouput
-// ) throws(Failure) -> sending Ouput? {
-//   guard var unlocked = try? tryUnlock(self) else { return nil }
-//   return try body(&unlocked.state)
-// }
+  #if false
+  // compiler is crashing on this one
+  public func withLockIfAvailable<Ouput: ~Copyable, Failure: Error>(
+    _ body: (inout sending State) throws(Failure) -> sending Ouput
+  ) throws(Failure) -> sending Ouput? {
+    guard var unlocked = try? tryUnlock(self) else { return nil }
+    return try body(&unlocked.state)
+  }
+  #endif
 }

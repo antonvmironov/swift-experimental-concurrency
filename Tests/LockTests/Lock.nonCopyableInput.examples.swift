@@ -27,63 +27,63 @@ import Testing
 
 #if false
 
-@Test func noncopyableInputForLock() {
-  struct Input: ~Copyable {
-    var content: String
-  }
+  @Test func noncopyableInputForLock() {
+    struct Input: ~Copyable {
+      var content: String
+    }
 
-  struct Consumer: ~Copyable {
-    var log = [String]()
+    struct Consumer: ~Copyable {
+      var log = [String]()
 
-    mutating func consume(input: consuming Input) {
-      log.append(input.content)
-      _ = consume input
+      mutating func consume(input: consuming Input) {
+        log.append(input.content)
+        _ = consume input
+      }
+    }
+
+    // EXAMPLE BEGIN
+    let lockedConsumer = Lock(Consumer())
+    let input = Input(content: "first")
+    // error: noncopyable 'input' cannot be consumed
+    // when captured by an escaping closure
+    lockedConsumer.withLock { consumer in
+      consumer.consume(input: input)
+    }
+    // EXAMPLE END
+
+    lockedConsumer.withLock { consumer in
+      #expect(consumer.log == ["first"])
     }
   }
 
-  // EXAMPLE BEGIN
-  let lockedConsumer = Lock(Consumer())
-  let input = Input(content: "first")
-  // error: noncopyable 'input' cannot be consumed
-  // when captured by an escaping closure
-  lockedConsumer.withLock { consumer in
-    consumer.consume(input: input)
-  }
-  // EXAMPLE END
+  @Test func noncopyableInputForMutex() {
+    struct Input: ~Copyable {
+      var content: String
+    }
 
-  lockedConsumer.withLock { consumer in
-    #expect(consumer.log == ["first"])
-  }
-}
+    struct Consumer: ~Copyable {
+      var log = [String]()
 
-@Test func noncopyableInputForMutex() {
-  struct Input: ~Copyable {
-    var content: String
-  }
+      mutating func consume(input: consuming Input) {
+        log.append(input.content)
+        _ = consume input
+      }
+    }
 
-  struct Consumer: ~Copyable {
-    var log = [String]()
+    // EXAMPLE BEGIN
+    let lockedConsumer = Mutex(Consumer())
+    let input = Input(content: "first")
+    // error: noncopyable 'input' cannot be consumed
+    // when captured by an escaping closure
+    lockedConsumer.withLock { consumer in
+      consumer.consume(input: input)
+    }
+    // EXAMPLE END
 
-    mutating func consume(input: consuming Input) {
-      log.append(input.content)
-      _ = consume input
+    lockedConsumer.withLock { consumer in
+      #expect(consumer.log == ["first"])
     }
   }
-
-  // EXAMPLE BEGIN
-  let lockedConsumer = Mutex(Consumer())
-  let input = Input(content: "first")
-  // error: noncopyable 'input' cannot be consumed
-  // when captured by an escaping closure
-  lockedConsumer.withLock { consumer in
-    consumer.consume(input: input)
-  }
-  // EXAMPLE END
-
-  lockedConsumer.withLock { consumer in
-    #expect(consumer.log == ["first"])
-  }
-}
 
 #endif
 
