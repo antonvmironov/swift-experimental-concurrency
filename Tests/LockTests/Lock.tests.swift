@@ -59,19 +59,19 @@ import Testing
 
 #if ENABLE_TRY_LOCK
 
-// compiler crashes on this one
-@Test func testTryLock() {
-  let lockedCounter = Lock(0)
-  DispatchQueue.concurrentPerform(
-    iterations: numberOfIterations
-  ) { iterationIndex in
-    do {
-      var unlockedCounter = try tryUnlock(lockedCounter)
-      unlockedCounter.state += 1
-    } catch {}
+  // compiler crashes on this one
+  @Test func testTryLock() {
+    let lockedCounter = Lock(0)
+    DispatchQueue.concurrentPerform(
+      iterations: numberOfIterations
+    ) { iterationIndex in
+      do {
+        var unlockedCounter = try tryUnlock(lockedCounter)
+        unlockedCounter.state += 1
+      } catch {}
+    }
+    #expect(lockedCounter.state <= numberOfIterations)
   }
-  #expect(lockedCounter.state <= numberOfIterations)
-}
 #endif
 
 private let numberOfIterations = 1_000_000
