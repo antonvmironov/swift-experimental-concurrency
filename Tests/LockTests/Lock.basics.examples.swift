@@ -25,7 +25,7 @@ import Testing
 
 @testable import Lock
 
-@Test func example_basicLock() {
+@Test func lockInClass() {
 
   // EXAMPLE BEGIN
   typealias Key = String

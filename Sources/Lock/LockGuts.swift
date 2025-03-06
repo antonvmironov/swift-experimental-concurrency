@@ -19,6 +19,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+import struct Synchronization.Mutex
 import struct Unsafe.UnsafeSendingBox
 
 @usableFromInline
@@ -26,7 +27,7 @@ final class LockGuts<State: ~Copyable>: Sendable {
   @usableFromInline
   nonisolated(unsafe) var _impl: LockGutsState<State>
   @usableFromInline
-  let _platformLock = PlatformLock()
+  let _mutex = Mutex<Void>(())
 
   @inlinable
   init(_ state: consuming sending State) {
@@ -35,13 +36,13 @@ final class LockGuts<State: ~Copyable>: Sendable {
 
   @inlinable
   func lockAndTakeState() -> sending State {
-    _platformLock.lock()
+    _mutex._unsafeLock()
     return _impl.takeState()
   }
 
   @inlinable
   func tryLockAndTakeState() throws(CancellationError) -> sending State {
-    guard _platformLock.tryLock() else {
+    guard _mutex._unsafeTryLock() else {
       throw CancellationError()
     }
     return _impl.takeState()
@@ -50,6 +51,6 @@ final class LockGuts<State: ~Copyable>: Sendable {
   @inlinable
   func returnStateAndUnlock(_ boxedState: consuming UnsafeSendingBox<State>) {
     _impl.returnStateBox(boxedState)
-    _platformLock.unlock()
+    _mutex._unsafeUnlock()
   }
 }
