@@ -21,13 +21,12 @@
 
 import struct Unsafe.UnsafeSendingBox
 
-///
 @usableFromInline
-final class LockHandle<State: ~Copyable>: Sendable {
+final class LockGuts<State: ~Copyable>: Sendable {
   @usableFromInline
-  nonisolated(unsafe) var _impl: _Impl
+  nonisolated(unsafe) var _impl: LockGutsState<State>
   @usableFromInline
-  let _lockMechanism = LockMechaism()
+  let _platformLock = PlatformLock()
 
   @inlinable
   init(_ state: consuming sending State) {
@@ -36,13 +35,13 @@ final class LockHandle<State: ~Copyable>: Sendable {
 
   @inlinable
   func lockAndTakeState() -> sending State {
-    _lockMechanism.lock()
+    _platformLock.lock()
     return _impl.takeState()
   }
 
   @inlinable
   func tryLockAndTakeState() throws(CancellationError) -> sending State {
-    guard _lockMechanism.tryLock() else {
+    guard _platformLock.tryLock() else {
       throw CancellationError()
     }
     return _impl.takeState()
@@ -51,33 +50,6 @@ final class LockHandle<State: ~Copyable>: Sendable {
   @inlinable
   func returnStateAndUnlock(_ boxedState: consuming UnsafeSendingBox<State>) {
     _impl.returnStateBox(boxedState)
-    _lockMechanism.unlock()
-  }
-
-  @usableFromInline
-  enum _Impl: ~Copyable {
-    case locked
-    case unlocked(State)
-
-    @inlinable
-    mutating func takeState() -> sending State {
-      if case .unlocked(let unlockeState) = consume self {
-        self = .locked
-        return unlockeState
-      } else {
-        fatalError("Recursive locking is not allowed")
-      }
-    }
-
-    @inlinable
-    mutating func returnStateBox(
-      _ boxedState: consuming UnsafeSendingBox<State>
-    ) {
-      if case .locked = consume self {
-        self = .unlocked(boxedState.value)
-      } else {
-        fatalError("Recursive locking is not allowed")
-      }
-    }
+    _platformLock.unlock()
   }
 }

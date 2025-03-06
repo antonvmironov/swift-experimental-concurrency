@@ -19,23 +19,43 @@
 //
 //===----------------------------------------------------------------------===//
 
-import struct Unsafe.UnsafeSendingBox
+import struct os.os_unfair_lock
+import func os.os_unfair_lock_lock
+import struct os.os_unfair_lock_t
+import func os.os_unfair_lock_trylock
+import func os.os_unfair_lock_unlock
 
-// swift-format-ignore: TypeNamesShouldBeCapitalized
-public typealias unlock = NonescapingUnlock
+@usableFromInline
+typealias PlatformLock = DarwinLock
 
-public struct NonescapingUnlock<State: ~Copyable>: ~Copyable, ~Escapable {
+/// Darwing-specific (macOS, iOS, etc) locking mechanism.
+@usableFromInline
+struct DarwinLock: Sendable, ~Copyable {
   @usableFromInline
-  let _guts: LockGuts<State>
-  public var state: State
+  nonisolated(unsafe) let _lock = os_unfair_lock_t.allocate(capacity: 1)
 
   @inlinable
-  public init(_ lock: borrowing Lock<State>) {
-    _guts = lock._guts
-    state = _guts.lockAndTakeState()
+  init() {
+    _lock.initialize(to: .init())
+  }
+
+  @inlinable
+  func lock() {
+    os_unfair_lock_lock(_lock)
+  }
+
+  @inlinable
+  func tryLock() -> Bool {
+    os_unfair_lock_trylock(_lock)
+  }
+
+  @inlinable
+  func unlock() {
+    os_unfair_lock_unlock(_lock)
   }
 
   deinit {
-    _guts.returnStateAndUnlock(UnsafeSendingBox(state))
+    _lock.deinitialize(count: 1)
+    _lock.deallocate()
   }
 }

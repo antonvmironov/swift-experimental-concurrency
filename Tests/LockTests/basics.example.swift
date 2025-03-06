@@ -20,11 +20,12 @@
 //===----------------------------------------------------------------------===//
 
 import Dispatch
+import Synchronization
 import Testing
 
 @testable import Lock
 
-@Test func basicExample() {
+@Test func example_basicLock() {
 
   // EXAMPLE BEGIN
   typealias Key = String

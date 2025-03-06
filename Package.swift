@@ -4,16 +4,16 @@ import PackageDescription
 
 let targetSwiftSettings: [SwiftSetting] = [
   .enableExperimentalFeature("AccessLevelOnImport"),
-  .enableExperimentalFeature("StrictConcurrency"),
   .enableExperimentalFeature("LifetimeDependence"),
-  .enableExperimentalFeature("NoImplicitCopy"),
+  .enableExperimentalFeature("StrictConcurrency"),
+  .enableExperimentalFeature("StrictMemorySafety"),
 ]
 
 let testTargetSwiftSettings: [SwiftSetting] = [
   .enableExperimentalFeature("AccessLevelOnImport"),
-  .enableExperimentalFeature("StrictConcurrency"),
   .enableExperimentalFeature("LifetimeDependence"),
-  .enableExperimentalFeature("NoImplicitCopy"),
+  .enableExperimentalFeature("StrictMemorySafety"),
+  .enableExperimentalFeature("StrictConcurrency"),
 ]
 
 func experimentTargets(

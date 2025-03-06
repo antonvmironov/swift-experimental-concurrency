@@ -26,6 +26,10 @@
 /// Only one execution context at a time has access to the value stored
 /// within the `Lock` allowing for exclusive access.
 ///
+/// - Warning: Recursive calls to `withLock` within the
+///   closure parameter will cause a fatal error.
+///
+///
 /// An example use of `Lock` in a class used simultaneously by many
 /// threads protecting a `Dictionary` value:
 ///
@@ -40,49 +44,11 @@
 ///
 public struct Lock<State: ~Copyable>: Sendable {
   @usableFromInline
-  let _handle: LockHandle<State>
+  let _guts: LockGuts<State>
 
   public init(_ state: consuming sending State) {
-    _handle = LockHandle(state)
+    _guts = LockGuts(state)
   }
-}
-
-extension Lock {
-  /// Calls the given closure after acquiring the lock and then releases
-  /// ownership.
-  ///
-  /// This method is equivalent to the following sequence of code:
-  ///
-  ///     lock.lock()
-  ///     defer {
-  ///       lock.unlock()
-  ///     }
-  ///     return try body(&value)
-  ///
-  /// - Warning: Recursive calls to `withLock` within the
-  ///   closure parameter will cause a fatal error.
-  ///
-  /// - Parameter body: A closure with a parameter of `State`
-  ///   that has exclusive mutating access to the value being stored within
-  ///   this `Lock`. This closure is considered the critical section
-  ///   as it will only be executed once the calling thread has
-  ///   acquired the lock.
-  ///
-  /// - Returns: The return value, if any, of the `body` closure parameter.
-  public func withLock<Ouput: ~Copyable, Failure: Error>(
-    _ body: (inout sending State) throws(Failure) -> sending Ouput
-  ) throws(Failure) -> sending Ouput {
-    var unlocked = unlock(self)
-    return try body(&unlocked.state)
-  }
-
-// compiler is crashing on this one
-// public func withLockIfAvailable<Ouput: ~Copyable, Failure: Error>(
-//   _ body: (inout sending State) throws(Failure) -> sending Ouput
-// ) throws(Failure) -> sending Ouput? {
-//   guard var unlocked = try? tryUnlock(self) else { return nil }
-//   return try body(&unlocked.state)
-// }
 }
 
 extension Lock where State: Copyable {

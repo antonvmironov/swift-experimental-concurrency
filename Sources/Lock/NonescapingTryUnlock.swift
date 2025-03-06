@@ -28,16 +28,16 @@ public struct NonescapingTryUnlock<
   State: ~Copyable
 >: ~Copyable, ~Escapable {
   @usableFromInline
-  let _handle: LockHandle<State>
+  let _guts: LockGuts<State>
   public var state: State
 
   @inlinable
   public init(_ lock: borrowing Lock<State>) throws(CancellationError) {
-    _handle = lock._handle
-    state = try _handle.tryLockAndTakeState()
+    _guts = lock._guts
+    state = try _guts.tryLockAndTakeState()
   }
 
   deinit {
-    _handle.returnStateAndUnlock(UnsafeSendingBox(state))
+    _guts.returnStateAndUnlock(UnsafeSendingBox(state))
   }
 }
