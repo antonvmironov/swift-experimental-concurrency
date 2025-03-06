@@ -62,7 +62,9 @@ import Testing
 // compiler crashes on this one
 @Test func testTryLock() {
   let lockedCounter = Lock(0)
-  DispatchQueue.concurrentPerform(iterations: numberOfIterations) { iterationIndex in
+  DispatchQueue.concurrentPerform(
+    iterations: numberOfIterations
+  ) { iterationIndex in
     do {
       var unlockedCounter = try tryUnlock(lockedCounter)
       unlockedCounter.state += 1

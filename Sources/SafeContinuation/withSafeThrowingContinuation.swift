@@ -21,6 +21,15 @@
 
 import struct Unsafe.UnsafeSendingBox
 
+/// Invokes the passed in closure with a safe continuation for the current task.
+///
+/// The body of the closure executes synchronously on the calling task,
+/// and once it returns the calling task is suspended.
+/// It is possible to immediately resume the task, or escape the continuation
+/// in order to complete it afterwards, which will then resume
+/// the suspended task.
+///
+/// You _should_ invoke the continuation's `resume` method exactly once.
 @inlinable
 public func withSafeThrowingContinuation<Success>(
   isolation: isolated (any Actor)? = #isolation,

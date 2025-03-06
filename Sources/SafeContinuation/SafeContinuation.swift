@@ -22,6 +22,21 @@
 import struct Lock.Lock
 import struct Lock.unlock
 
+/// A mechanism to interface between synchronous and asynchronous code,
+/// automatically handles violation of continuation invariants like:
+/// * continuation is lost (deinitialized) before
+///   it was resumed by resuming it with provided fallback
+/// * continuation was resumed more than once
+///
+/// A *continuation* is an opaque representation of program state.
+/// To create a continuation in asynchronous code,
+/// call the `withSafeContinuation(function:_:)` or
+/// `withSafeThrowingContinuation(function:_:)` function.
+/// To resume the asynchronous task,
+/// call the `resume(returning:)`,
+/// `resume(throwing:)`,
+/// `resume(with:)`,
+/// or `resume()` method.
 public struct SafeContinuation<Success, Failure: Error>: Sendable {
   @usableFromInline
   typealias Guts = SafeContinuationGuts<Success, Failure>
