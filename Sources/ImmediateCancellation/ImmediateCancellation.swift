@@ -34,24 +34,28 @@ public func withImmediateCancellation<Output>(
       async let _ = withSafeThrowingContinuation(
         fallbackResult: .failure(CancellationError())
       ) { continuation in
-        var unlockedState = unlock(lockedState)
-        unlockedState.state.receiveContinuation(continuation)
+        lockedState.withLock {
+          $0.receiveContinuation(continuation)
+        }
       }
 
       do {
         let output = try await operation()
-        var unlockedState = unlock(lockedState)
-        unlockedState.state.receiveOutput(UnsafeSendingBox(.success(output)))
+        lockedState.withLock {
+          $0.receiveOutput(UnsafeSendingBox(.success(output)))
+        }
         return output
       } catch {
-        var unlockedState = unlock(lockedState)
-        unlockedState.state.receiveOutput(UnsafeSendingBox(.failure(error)))
+        lockedState.withLock {
+          $0.receiveOutput(UnsafeSendingBox(.failure(error)))
+        }
         throw error
       }
     },
     onCancel: {
-      var unlockedState = unlock(lockedState)
-      unlockedState.state.receivedCancellation()
+      lockedState.withLock {
+        $0.receivedCancellation()
+      }
     },
     isolation: isolation,
   )

@@ -24,6 +24,7 @@ import struct Unsafe.UnsafeSendingBox
 // swift-format-ignore: TypeNamesShouldBeCapitalized
 public typealias tryUnlock = NonescapingTryUnlock
 
+@available(*, noasync)
 public struct NonescapingTryUnlock<
   State: ~Copyable
 >: ~Copyable, ~Escapable {
@@ -31,6 +32,7 @@ public struct NonescapingTryUnlock<
   let _guts: LockGuts<State>
   public var state: State
 
+  @available(*, noasync)
   @inlinable
   public init(_ lock: borrowing Lock<State>) throws(CancellationError) {
     _guts = lock._guts

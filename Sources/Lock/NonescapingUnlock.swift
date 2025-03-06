@@ -29,6 +29,7 @@ public struct NonescapingUnlock<State: ~Copyable>: ~Copyable, ~Escapable {
   let _guts: LockGuts<State>
   public var state: State
 
+  @available(*, noasync)
   @inlinable
   public init(_ lock: borrowing Lock<State>) {
     _guts = lock._guts

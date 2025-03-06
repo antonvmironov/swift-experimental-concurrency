@@ -7,6 +7,8 @@ let targetSwiftSettings: [SwiftSetting] = [
   .enableExperimentalFeature("LifetimeDependence"),
   .enableExperimentalFeature("StrictConcurrency"),
   .enableExperimentalFeature("StrictMemorySafety"),
+
+  // .define("ENABLE_TRY_LOCK"),
 ]
 
 let testTargetSwiftSettings: [SwiftSetting] = [
@@ -14,6 +16,8 @@ let testTargetSwiftSettings: [SwiftSetting] = [
   .enableExperimentalFeature("LifetimeDependence"),
   .enableExperimentalFeature("StrictMemorySafety"),
   .enableExperimentalFeature("StrictConcurrency"),
+
+  // .define("ENABLE_TRY_LOCK"),
 ]
 
 func experimentTargets(

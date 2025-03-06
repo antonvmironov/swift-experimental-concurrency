@@ -32,7 +32,8 @@ import Testing
     lockedCounter.add(1, ordering: .sequentiallyConsistent)
   }
   #expect(
-    numberOfIterations == lockedCounter.load(ordering: .sequentiallyConsistent))
+    lockedCounter.load(ordering: .sequentiallyConsistent) == numberOfIterations
+  )
 }
 
 @Test func testLock() {
@@ -45,16 +46,30 @@ import Testing
   #expect(numberOfIterations == lockedCounter.state)
 }
 
+@Test func unavailableFromAsync() async throws {
+  let lockedCounter = Lock(0)
+
+  _ = {
+    var unlockedCounter = unlock(lockedCounter)
+    unlockedCounter.state += 1
+  }()
+  try await ContinuousClock().sleep(for: .seconds(1))
+  #expect(lockedCounter.state == 1)
+}
+
+#if ENABLE_TRY_LOCK
+
 // compiler crashes on this one
-// @Test func testTryLock() {
-//   let lockedCounter = Lock(0)
-//   DispatchQueue.concurrentPerform(iterations: numberOfIterations) { iterationIndex in
-//     do {
-//       var unlockedCounter = try tryUnlock(lockedCounter)
-//       unlockedCounter.value += 1
-//     } catch {}
-//   }
-//   #expect(numberOfIterations >= lockedCounter.value)
-// }
+@Test func testTryLock() {
+  let lockedCounter = Lock(0)
+  DispatchQueue.concurrentPerform(iterations: numberOfIterations) { iterationIndex in
+    do {
+      var unlockedCounter = try tryUnlock(lockedCounter)
+      unlockedCounter.state += 1
+    } catch {}
+  }
+  #expect(lockedCounter.state <= numberOfIterations)
+}
+#endif
 
 private let numberOfIterations = 1_000_000

@@ -48,7 +48,8 @@ extension Lock where State: ~Copyable {
     return try body(&unlocked.state)
   }
 
-  #if false
+  #if ENABLE_TRY_LOCK
+
   // compiler is crashing on this one
   public func withLockIfAvailable<Ouput: ~Copyable, Failure: Error>(
     _ body: (inout sending State) throws(Failure) -> sending Ouput
@@ -56,5 +57,6 @@ extension Lock where State: ~Copyable {
     guard var unlocked = try? tryUnlock(self) else { return nil }
     return try body(&unlocked.state)
   }
+
   #endif
 }
