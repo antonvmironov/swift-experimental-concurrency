@@ -19,26 +19,24 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Dispatch
-import Synchronization
-import Testing
+import struct Unsafe.UnsafeSendingBox
 
-@testable import SafeContinuation
+@inlinable public func withSafeContinuation<Output>(
+  isolation: isolated (any Actor)? = #isolation,
+  fallback: sending Output,
+  _ body: (SafeContinuation<Output, Never>) -> Void
+) async -> sending Output {
+  let box = UnsafeSendingBox(Result<Output, Never>.success(fallback))
 
-private let numberOfIterations = 1_000
-
-@Test func testNormalResumeOfSafeContinuation() async {
-  await withTaskGroup { group in
-    for index in 0..<numberOfIterations {
-      group.addTask {
-        let value: Int = await withSafeContinuation(fallback: -1) {
-          continuation in
-          for _ in 0..<10 {
-            continuation.resume(returning: index)
-          }
-        }
-        #expect(value == index)
-      }
-    }
+  let output = await withUnsafeContinuation(
+    isolation: isolation
+  ) { unsafeContinuation in
+    let safeContinuation = SafeContinuation(
+      unsafeContinuation: unsafeContinuation,
+      fallbackResultBox: UnsafeSendingBox(box.value)
+    )
+    body(safeContinuation)
   }
+
+  return output
 }
