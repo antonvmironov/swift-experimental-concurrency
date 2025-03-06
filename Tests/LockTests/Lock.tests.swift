@@ -25,7 +25,8 @@ import Testing
 
 @testable import Lock
 
-@Test func testAtomics() {
+@Test("[Atomic] Atomic counter increments as expected")
+func testAtomics() {
   let lockedCounter = Atomic(0)
   DispatchQueue.concurrentPerform(iterations: numberOfIterations) {
     iterationIndex in
@@ -36,7 +37,8 @@ import Testing
   )
 }
 
-@Test func testLock() {
+@Test("[Lock] Locked counter increments as expected with `unlock`")
+func testLock() {
   let lockedCounter = Lock(0)
   DispatchQueue.concurrentPerform(iterations: numberOfIterations) {
     iterationIndex in
@@ -46,21 +48,23 @@ import Testing
   #expect(numberOfIterations == lockedCounter.state)
 }
 
-@Test func unavailableFromAsync() async throws {
+@Test("[Lock] No async unlock works as expected")
+func unavailableFromAsync() async throws {
   let lockedCounter = Lock(0)
 
   _ = {
     var unlockedCounter = unlock(lockedCounter)
     unlockedCounter.state += 1
   }()
+
   try await ContinuousClock().sleep(for: .seconds(1))
   #expect(lockedCounter.state == 1)
 }
 
 #if ENABLE_TRY_LOCK
-
   // compiler crashes on this one
-  @Test func testTryLock() {
+  @Test("[Lock] Locked counter increments as expected with `tryUnlock`")
+  func testTryLock() {
     let lockedCounter = Lock(0)
     DispatchQueue.concurrentPerform(
       iterations: numberOfIterations

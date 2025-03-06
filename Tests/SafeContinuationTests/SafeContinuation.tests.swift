@@ -26,7 +26,8 @@ import Testing
 
 private let numberOfIterations = 1_000
 
-@Test func testNormalResumeOfSafeContinuation() async {
+@Test("[withSafeContinuation] A normal resuming behavior of SafeContinuation")
+func normalResume() async {
   await withTaskGroup { group in
     for index in 0..<numberOfIterations {
       group.addTask {

@@ -25,7 +25,8 @@ import Testing
 
 @testable import Lock
 
-@Test func lockInClass() {
+@Test("[Example] An example of using Lock as a field in a thread-safe class")
+func lockInClass() {
 
   // EXAMPLE BEGIN
   typealias Key = String

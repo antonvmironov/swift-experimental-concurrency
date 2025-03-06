@@ -27,12 +27,22 @@ import Testing
 
 private let numberOfIterations = 1_000
 
-@Test func testImmediateOutput() async throws {
+@Test(
+  "[withImmediateCancellation] Successfully returning a value",
+  arguments: SimulatedOperation.allCases
+)
+func success(operation: SimulatedOperation) async throws {
   await withThrowingTaskGroup { group in
     for index in 0..<numberOfIterations {
       group.addTask {
         let value = try await withImmediateCancellation {
-          index
+          switch operation {
+            case .none: break
+            case .yield: await Task.yield()
+            case .sleep:
+              try await ContinuousClock().sleep(for: .milliseconds(100))
+          }
+          return index
         }
         #expect(value == index)
       }
@@ -40,12 +50,22 @@ private let numberOfIterations = 1_000
   }
 }
 
-@Test func testImmediateFailure() async throws {
+@Test(
+  "[withImmediateCancellation] Throwing an error",
+  arguments: SimulatedOperation.allCases
+)
+func failure(operation: SimulatedOperation) async throws {
   await withThrowingTaskGroup { group in
     for index in 0..<numberOfIterations {
       group.addTask {
         await #expect(throws: TestFailure.self) {
           let value: Int = try await withImmediateCancellation {
+            switch operation {
+              case .none: break
+              case .yield: await Task.yield()
+              case .sleep:
+                try await ContinuousClock().sleep(for: .milliseconds(100))
+            }
             throw TestFailure.testCode
           }
           #expect(value == index)
@@ -55,6 +75,58 @@ private let numberOfIterations = 1_000
   }
 }
 
+@Test("[withImmediateCancellation] Early cancellation")
+func earlyCancellation() async throws {
+  await withThrowingTaskGroup { group in
+    for index in 0..<numberOfIterations {
+      group.addTask {
+        let task: Task<Void, Error> = Task {
+          try await ContinuousClock().sleep(for: .milliseconds(100))
+          let value: Int = try await withImmediateCancellation {
+            try await ContinuousClock().sleep(for: .milliseconds(100))
+            return index
+          }
+          #expect(value == index)
+        }
+        task.cancel()
+        await #expect(throws: CancellationError.self) {
+          try await task.value
+        }
+      }
+    }
+  }
+}
+
+
+@Test("[withImmediateCancellation] Late cancellation")
+func lateCancellation() async throws {
+  await withThrowingTaskGroup { group in
+    for index in 0..<numberOfIterations {
+      group.addTask {
+        let task: Task<Void, Error> = Task {
+          let value: Int = try await withImmediateCancellation {
+            try await ContinuousClock().sleep(for: .milliseconds(100))
+            return index
+          }
+          #expect(value == index)
+        }
+        task.cancel()
+        await #expect(throws: CancellationError.self) {
+          try await task.value
+        }
+      }
+    }
+  }
+}
+
+// MARK: -
+
 enum TestFailure: Error {
   case testCode
+}
+
+enum SimulatedOperation: Sendable, CaseIterable {
+  case none
+  case yield
+  case sleep
 }

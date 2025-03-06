@@ -2,23 +2,19 @@
 
 import PackageDescription
 
-let targetSwiftSettings: [SwiftSetting] = [
+let baseSwiftSettings: [SwiftSetting] = [
   .enableExperimentalFeature("AccessLevelOnImport"),
   .enableExperimentalFeature("LifetimeDependence"),
   .enableExperimentalFeature("StrictConcurrency"),
   .enableExperimentalFeature("StrictMemorySafety"),
 
+  // .define("DISABLE_UNSAFE_SENDING_BOX"),
   // .define("ENABLE_TRY_LOCK"),
+  // .define("ENABLE_CONSUME_NON_COPYABLE_IN_CLOSURE"),
 ]
 
-let testTargetSwiftSettings: [SwiftSetting] = [
-  .enableExperimentalFeature("AccessLevelOnImport"),
-  .enableExperimentalFeature("LifetimeDependence"),
-  .enableExperimentalFeature("StrictMemorySafety"),
-  .enableExperimentalFeature("StrictConcurrency"),
-
-  // .define("ENABLE_TRY_LOCK"),
-]
+let targetSwiftSettings: [SwiftSetting] = baseSwiftSettings
+let testTargetSwiftSettings: [SwiftSetting] = baseSwiftSettings
 
 func experimentTargets(
   targetName: String,

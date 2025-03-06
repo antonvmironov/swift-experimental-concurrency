@@ -24,23 +24,26 @@ import Testing
 
 @testable import Unsafe
 
-private let numberOfIterations = 1_000
-
+#if DISABLE_UNSAFE_SENDING_BOX
 // ⛔️
 // error: sending 'input' risks causing data races
 //     await sendingRecepient(input: input)
 //           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-// @Test func testScenarioUnboxed() async {
-//   let input = NonSendableElement(string: "input")
-//   let output = await sendingBoundary() {
-//     await sendingRecepient(input: input)
-//   }
+@Test("[UnsafeSendingBox] Do not use UnsafeSendingBox")
+func notBoxed() async {
+  let value = NonSendableElement(string: "input")
+  let output = await sendingBoundary {
+    await sendingRecepient(input: value)
+  }
 
-//   _ = output
-// }
+  _ = output
+}
 
-@Test func testScenarioBoxed() async {
+#endif
+
+@Test("[UnsafeSendingBox] A scenario UnsafeSendingBox was built for")
+func boxed() async {
   let inputBox = UnsafeSendingBox(NonSendableElement(string: "input"))
   let output = await sendingBoundary {
     await sendingRecepient(input: inputBox.value)
@@ -68,3 +71,5 @@ private func sendingBoundary(
 ) async -> sending NonSendableElement {
   await operation()
 }
+
+private let numberOfIterations = 1_000

@@ -67,7 +67,7 @@ enum ImmediateCancellationState<Output>: ~Copyable {
     case .receivedCancellation:
       return
     case .complete:
-      fatalError()
+      return
     }
     self = next
   }

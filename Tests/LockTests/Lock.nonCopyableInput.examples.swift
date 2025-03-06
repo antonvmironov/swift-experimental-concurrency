@@ -25,8 +25,9 @@ import Testing
 
 @testable import Lock
 
-#if ENABLE_TRY_LOCK
+#if ENABLE_CONSUME_NON_COPYABLE_IN_CLOSURE
 
+  @Test("[Example] ~Copyable input is consumed by a State under Mutex")
   @Test func noncopyableInputForLock() {
     struct Input: ~Copyable {
       var content: String
@@ -56,6 +57,7 @@ import Testing
     }
   }
 
+  @Test("[Example] ~Copyable input is consumed by a State under Mutex")
   @Test func noncopyableInputForMutex() {
     struct Input: ~Copyable {
       var content: String
@@ -87,7 +89,8 @@ import Testing
 
 #endif
 
-@Test func noncopyableInputForLock() {
+@Test("[Example] ~Copyable input is consumed by a State under lock")
+func noncopyableInputForLock() {
   struct Input: ~Copyable {
     var content: String
   }
