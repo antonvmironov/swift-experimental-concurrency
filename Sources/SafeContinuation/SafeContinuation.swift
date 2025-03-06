@@ -19,43 +19,42 @@
 //
 //===----------------------------------------------------------------------===//
 
-import struct Unsafe.UnsafeSendingBox
 import struct Lock.Lock
 import struct Lock.unlock
 
-public struct SafeContinuation<T, E: Error>: Sendable {
+public struct SafeContinuation<Success, Failure: Error>: Sendable {
   @usableFromInline
-  typealias FallbackResultBox = UnsafeSendingBox<Result<T, E>>
+  typealias Guts = SafeContinuationGuts<Success, Failure>
 
   @usableFromInline
-  let _impl: Lock<_Impl>
+  let _guts: Lock<Guts>
 
   @inlinable
   init(
-    unsafeContinuation: consuming sending UnsafeContinuation<T, E>,
-    fallbackResultBox: consuming sending FallbackResultBox,
+    unsafeContinuation: consuming sending Guts.UnsafeContinuation,
+    fallbackResultBox: consuming sending Guts.FallbackResultBox,
   ) {
-    let impl = _Impl(
+    let impl = Guts(
       unsafeContinuation: unsafeContinuation,
       fallbackResultBox: fallbackResultBox,
     )
-    _impl = Lock(impl)
+    _guts = Lock(impl)
   }
 
   @inlinable
-  public func resume(returning value: consuming sending T) {
-    var impl = unlock(_impl)
+  public func resume(returning value: consuming sending Success) {
+    var impl = unlock(_guts)
     impl.state.resume(returning: value)
   }
 
   @inlinable
-  public func resume(throwing error: consuming E) {
-    var impl = unlock(_impl)
+  public func resume(throwing error: consuming Failure) {
+    var impl = unlock(_guts)
     impl.state.resume(throwing: error)
   }
 
   @inlinable
-  public func resume(with result: consuming sending Result<T, E>) {
+  public func resume(with result: consuming sending Result<Success, Failure>) {
     switch result {
       case .success(let value):
         resume(returning: value)

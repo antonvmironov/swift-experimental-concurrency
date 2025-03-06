@@ -21,14 +21,15 @@
 
 import struct Unsafe.UnsafeSendingBox
 
-@inlinable public func withSafeThrowingContinuation<Output>(
+@inlinable
+public func withSafeThrowingContinuation<Success>(
   isolation: isolated (any Actor)? = #isolation,
-  fallbackResult: sending Result<Output, Error> = .failure(CancellationError()),
-  _ body: (SafeContinuation<Output, Error>) -> Void
-) async throws -> sending Output {
+  fallbackResult: sending Result<Success, Error>,
+  _ body: (SafeContinuation<Success, Error>) -> Void
+) async throws -> sending Success {
   let box = UnsafeSendingBox(fallbackResult)
 
-  let output = try await withUnsafeThrowingContinuation(
+  let success = try await withUnsafeThrowingContinuation(
     isolation: isolation
   ) { unsafeContinuation in
     let safeContinuation = SafeContinuation(
@@ -38,5 +39,5 @@ import struct Unsafe.UnsafeSendingBox
     body(safeContinuation)
   }
 
-  return output
+  return success
 }

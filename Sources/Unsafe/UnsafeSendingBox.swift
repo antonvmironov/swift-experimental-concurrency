@@ -19,6 +19,10 @@
 //
 //===----------------------------------------------------------------------===//
 
+/// A workaround for `sending '<value>' risks causing data races` safety check.
+///
+/// Using this implies you have a use case with
+/// safe behavior that is not yet expressible by compiler.
 @frozen
 @usableFromInline
 package struct UnsafeSendingBox<Value: ~Copyable>: ~Copyable, Sendable {
